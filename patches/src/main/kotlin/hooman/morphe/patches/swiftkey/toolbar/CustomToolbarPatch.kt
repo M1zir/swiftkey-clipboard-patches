@@ -34,7 +34,7 @@ private val customToolbarResources = resourcePatch {
     execute {
         // The native home icons are white and are tinted only for known keys.
         // Give the new preference its own icon that resolves the current theme.
-        get("res/drawable/clean_toolbar_icon.xml").writeText("""
+        get("res/drawable/clean_toolbar_icon.xml").apply { parentFile.mkdirs() }.writeText("""
             <vector xmlns:android="http://schemas.android.com/apk/res/android"
                 android:width="24dp" android:height="24dp"
                 android:viewportWidth="24" android:viewportHeight="24">
