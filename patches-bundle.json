@@ -1,5 +1,6 @@
 {
-  "created_at": "2026-11-09T02:32:56Z",
+  "created_at": "2026-11-09T02:32:56",
+  "page_url": "https://github.com/murilosimao/swiftkey-patch/releases/tag/v0.1.0",
   "description": "Experimental SwiftKey 9.13.19.3 patches: local toolbar editor, cloud prompt control and telemetry changes. On-device validation pending.",
   "download_url": "https://github.com/murilosimao/swiftkey-patch/releases/download/v0.1.0/swiftkey-clean-patches-0.1.0.mpp",
   "signature_download_url": "",

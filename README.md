@@ -12,6 +12,23 @@ version code `1236467760`). Projeto independente, sem vínculo com Microsoft ou 
 Os dois primeiros patches foram adaptados do [Hooman](https://github.com/arandomhooman/hoomans-morphe-patches).
 Veja [atribuição e licenças](THIRD_PARTY_NOTICES.md).
 
+## Adicionar ao Morphe
+
+Em **Fontes → Adicionar → Remota**, use:
+
+```text
+https://github.com/murilosimao/swiftkey-patch
+```
+
+Ou abra [Adicionar fonte no Morphe](https://morphe.software/add-source?github=murilosimao/swiftkey-patch).
+Para adicionar ao índice comunitário, informe a mesma URL do repositório.
+O arquivo `patches-list.json` na raiz é o catálogo que esse formulário consulta;
+`patches-bundle.json` aponta para o `.mpp` da release. O ícone próprio é opcional.
+
+Também é possível baixar o `.mpp` da [release experimental](https://github.com/murilosimao/swiftkey-patch/releases/tag/v0.1.0)
+e adicioná-lo como fonte **Local**. O carregamento no Manager ainda precisa ser
+validado no Android; a geração e aplicação pelo Desktop foram verificadas.
+
 ## Toolbar
 
 1. Abra as configurações do SwiftKey e toque em **Personalizar toolbar**, logo abaixo de **Layout e teclas**.
@@ -55,6 +72,11 @@ As ferramentas públicas são baixadas com versões e hashes fixos.
 **Nenhum token do GitHub é necessário para compilar.** O build usa as APIs do
 Patcher 2.3.0 incluídas no Desktop 2.1.1 como dependência somente de compilação.
 O runtime do Desktop não é empacotado no bundle.
+
+O mesmo build gera `patches-list.json` usando o gerador do template oficial,
+adaptado para ler explicitamente o bundle compilado. O gerador fica no módulo JVM
+`catalog` e não entra no `.mpp`. Ele também valida a versão, o link do artefato e a
+data dos metadados no formato do Manager. Não edite o catálogo manualmente.
 
 Saída: `patches/build/libs/swiftkey-clean-patches-0.1.0.mpp`, com classes JVM e DEX
 para os carregadores do Desktop e Android. A extensão do teclado contém apenas DEX.

@@ -15,6 +15,12 @@ distributed under the Apache License 2.0. Google R8/D8 is also Apache-2.0.
 Neither Desktop nor R8 is committed here: the bootstrap script downloads
 public releases and checks their SHA-256 hashes.
 
+The `catalog` generator is adapted from Morphe's official
+[patches template](https://github.com/MorpheApp/morphe-patches-template),
+copyright 2025 Morphe, GPL-3.0 with Section 7 conditions. Its original
+[NOTICE](catalog/NOTICE) is preserved. The adaptation uses explicit bundle inputs
+and validates source metadata; it is a build tool and is not included in the MPP.
+
 SwiftKey is Microsoft's application. Its APKs, split APKs, decompiled source,
 native libraries, signing keys and patched application are not distributed
 in this repository or its releases.

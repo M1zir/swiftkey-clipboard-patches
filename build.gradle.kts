@@ -7,4 +7,4 @@ extra["androidJar"] = file("${sdk.get()}/platforms/android-36/android.jar")
 extra["d8Jar"] = file("tools/r8-9.5.29.jar")
 extra["desktopJar"] = file("tools/morphe-desktop-2.1.1-all.jar")
 
-tasks.register("buildAndroid") { dependsOn(":patches:buildAndroid") }
+tasks.register("buildAndroid") { dependsOn(":patches:buildAndroid", ":catalog:generatePatchesList") }
