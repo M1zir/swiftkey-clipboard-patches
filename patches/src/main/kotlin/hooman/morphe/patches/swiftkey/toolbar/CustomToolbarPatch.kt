@@ -32,6 +32,17 @@ private object ToolbarStateFingerprint : Fingerprint(
 private val customToolbarResources = resourcePatch {
     compatibleWith(swiftKeyCompatibility)
     execute {
+        // The native home icons are white and are tinted only for known keys.
+        // Give the new preference its own icon that resolves the current theme.
+        get("res/drawable/clean_toolbar_icon.xml").writeText("""
+            <vector xmlns:android="http://schemas.android.com/apk/res/android"
+                android:width="24dp" android:height="24dp"
+                android:viewportWidth="24" android:viewportHeight="24">
+                <path android:fillColor="?android:attr/textColorPrimary"
+                    android:pathData="M3,5L21,5L21,19L3,19ZM5,7L5,17L19,17L19,7ZM6,8L8,8L8,10L6,10ZM10,8L12,8L12,10L10,10ZM14,8L18,8L18,10L14,10ZM6,12L8,12L8,14L6,14ZM10,12L18,12L18,14L10,14Z"
+                    android:fillType="evenOdd"/>
+            </vector>
+        """.trimIndent())
         document("res/values/strings.xml").use { doc ->
             val root = doc.documentElement
             for ((name, value) in mapOf("clean_toolbar_title" to "Personalizar toolbar",
@@ -58,7 +69,7 @@ private val customToolbarResources = resourcePatch {
                 setAttribute("android:key", "swiftkey_clean_toolbar_editor")
                 setAttribute("android:title", "@string/clean_toolbar_title")
                 setAttribute("android:summary", "@string/clean_toolbar_summary")
-                setAttribute("android:icon", "@drawable/ic_home_layout")
+                setAttribute("android:icon", "@drawable/clean_toolbar_icon")
                 setAttribute("android:persistent", "false")
                 appendChild(doc.createElement("intent").apply {
                     setAttribute("android:targetPackage", "com.touchtype.swiftkey")
