@@ -75,6 +75,10 @@ validada com Desktop 2.1.1; a execução pelo Manager no Android ainda não foi 
 
 ## Evolução
 
+Ao publicar uma atualização, incremente `version` em `gradle.properties` e atualize
+`patches-bundle.json` para o novo arquivo de release. O script de aplicação lê a
+versão do projeto automaticamente.
+
 Os patches são independentes. As mudanças ficam em `patches/`; o editor e suas
 regras ficam em `extensions/swiftkey/`. A ponte para as classes ofuscadas é gerada
 ao aplicar o patch, sem empacotar classes falsas do app. Padrões ambíguos interrompem

@@ -16,9 +16,10 @@ if [[ -z "${JAVA_HOME:-}" && -d /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk
 fi
 python3 scripts/bootstrap.py
 ./gradlew buildAndroid --console=plain
+patch_version=$(python3 -c 'import pathlib; print(next(line.split("=", 1)[1].strip() for line in pathlib.Path("gradle.properties").read_text().splitlines() if line.startswith("version=")))')
 mkdir -p "$(dirname "$output_path")" artifacts
 "${JAVA_HOME:+$JAVA_HOME/bin/}java" -Xmx3g -jar tools/morphe-desktop-2.1.1-all.jar patch \
-  --patches patches/build/libs/swiftkey-clean-patches-0.1.0.mpp \
+  --patches "patches/build/libs/swiftkey-clean-patches-$patch_version.mpp" \
   --validate --bytecode-mode FULL --out "$output_path" \
   --result-file artifacts/patch-result.json "$input_path"
 "${JAVA_HOME:+$JAVA_HOME/bin/}java" --class-path tools/morphe-desktop-2.1.1-all.jar \

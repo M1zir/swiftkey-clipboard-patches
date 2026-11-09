@@ -11,6 +11,8 @@ tasks.jar {
     manifest.attributes(mapOf("Name" to "Murilo's SwiftKey Clean Patches", "Version" to project.version,
         "Description" to "Private SwiftKey customisation with local toolbar preferences",
         "Author" to "Murilo; SwiftKey privacy patches adapted from arandomhooman",
+        "Source" to "https://github.com/murilosimao/swiftkey-patch",
+        "Website" to "https://github.com/murilosimao/swiftkey-patch",
         "License" to "GPLv3", "Patcher-Version" to "2.3.0"))
 }
 val dexDir = layout.buildDirectory.dir("dex")
