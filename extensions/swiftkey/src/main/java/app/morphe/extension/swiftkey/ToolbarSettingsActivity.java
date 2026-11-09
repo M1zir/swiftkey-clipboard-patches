@@ -98,12 +98,12 @@ public final class ToolbarSettingsActivity extends Activity {
         LinearLayout header = new LinearLayout(this); header.setGravity(Gravity.CENTER_VERTICAL);
         Button back = button("‹", view -> finish()); back.setContentDescription("Voltar");
         header.addView(back, new LinearLayout.LayoutParams(dp(48), dp(48)));
-        header.addView(text("Personalizar toolbar", 21, true), new LinearLayout.LayoutParams(0, -2, 1));
+        header.addView(text("Atalhos da barra", 21, true), new LinearLayout.LayoutParams(0, -2, 1));
         root.addView(header);
 
         ScrollView scroll = new ScrollView(this); scroll.setFillViewport(true);
         LinearLayout body = column();
-        TextView intro = text("Escolha os atalhos e a ordem. O teclado ajusta o espaçamento automaticamente.", 15, false);
+        TextView intro = text("Selecione apenas os itens que deseja mostrar. Você pode deixar menos de seis atalhos.", 15, false);
         intro.setTextColor(mutedColor); body.addView(intro);
         toggle = new Switch(this); toggle.setText("Usar minha toolbar"); toggle.setTextSize(17);
         toggle.setTextColor(textColor); toggle.setMinHeight(dp(56)); toggle.setChecked(enabled);
@@ -132,7 +132,7 @@ public final class ToolbarSettingsActivity extends Activity {
 
     private void renderRows() {
         rows.removeAllViews();
-        count.setText(selected.size() + (selected.size() == 1 ? " atalho selecionado" : " atalhos selecionados"));
+        count.setText(selected.size() + (selected.size() == 1 ? " atalho + Mais opções" : " atalhos + Mais opções"));
         rows.addView(text("Na sua toolbar", 16, true));
         for (int i = 0; i < selected.size(); i++) {
             Item item = catalog.get(selected.get(i));

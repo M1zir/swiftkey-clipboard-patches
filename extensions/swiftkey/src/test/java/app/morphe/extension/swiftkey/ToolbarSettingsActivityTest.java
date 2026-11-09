@@ -3,6 +3,7 @@ package app.morphe.extension.swiftkey;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.Intent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -99,6 +100,37 @@ public class ToolbarSettingsActivityTest {
             Button save = (Button) find(controller.get(), "Salvar alterações");
             assertTrue(save.getMeasuredWidth() > 0); assertTrue(save.getMeasuredHeight() >= 48);
             assertTrue(save.getBottom() <= 640);
+        }
+    }
+    @Test public void stockReorderEntryOpensVariableCountEditor() {
+        Application app = RuntimeEnvironment.getApplication();
+        View entry = new View(app);
+        boolean[] originalOpened = {false};
+        ToolbarHooks.bindEditor(entry, clicked -> originalOpened[0] = true);
+        entry.performClick();
+        Intent intent = org.robolectric.Shadows.shadowOf(app).getNextStartedActivity();
+        assertNotNull(intent);
+        assertEquals(ToolbarSettingsActivity.class.getName(), intent.getComponent().getClassName());
+        assertTrue((intent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0);
+        assertFalse(originalOpened[0]);
+    }
+    @Test public void userCanReduceSixNativeShortcutsToTwoWithoutRefilling() {
+        prefs.edit().putString("order", "29,44,2,10,47,4").putBoolean("enabled", false).apply();
+        try (var controller = Robolectric.buildActivity(ToolbarSettingsActivity.class).setup()) {
+            ToolbarSettingsActivity activity = controller.get();
+            for (String label : List.of("Copilot", "Mídia", "Tradutor", "Busca")) {
+                flatten(activity.findViewById(android.R.id.content)).stream()
+                    .filter(view -> ("Ocultar " + label).equals(view.getContentDescription()))
+                    .findFirst().orElseThrow().performClick();
+            }
+            find(activity, "2 atalhos + Mais opções");
+            find(activity, "Salvar alterações").performClick();
+            assertEquals("2,4", prefs.getString("order", ""));
+            assertTrue(prefs.getBoolean("enabled", false));
+            java.util.LinkedHashMap<Integer, String> available = new java.util.LinkedHashMap<>();
+            for (int id : List.of(29, 44, 2, 10, 47, 4, 16)) available.put(id, String.valueOf(id));
+            assertEquals(List.of("2", "4", "16"), ToolbarSelection.choose(available,
+                ToolbarSelection.parse(prefs.getString("order", "")), 7));
         }
     }
 }

@@ -2,6 +2,7 @@ package app.morphe.extension.swiftkey;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.Intent;
 import android.os.UserManager;
 import android.view.View;
 import java.lang.ref.WeakReference;
@@ -18,6 +19,16 @@ public final class ToolbarHooks {
 
     static SharedPreferences prefs(Context context) {
         return context.getApplicationContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+    }
+
+    /** Replaces the native six-slot customiser entry without changing the other menu buttons. */
+    public static void bindEditor(View entry, View.OnClickListener originalListener) {
+        entry.setOnClickListener(clicked -> {
+            Context context = clicked.getContext();
+            Intent intent = new Intent(context, ToolbarSettingsActivity.class)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            context.startActivity(intent);
+        });
     }
 
     public static ArrayList<Object> select(List<?> dynamic, List<?> fixed, List<?> overflow, View toolbar) {

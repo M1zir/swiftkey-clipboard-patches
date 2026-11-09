@@ -63,6 +63,12 @@ class VerifyPatchedApk {
             }
         }
         require(hooked, "Toolbar render hook was not emitted");
+        Method stockEditorEntry = method(classes, "Lrd0/p1;", "<init>", 9);
+        long editorHooks = instructions(stockEditorEntry).stream().filter(instruction ->
+            instruction instanceof ReferenceInstruction reference && reference.getReference() instanceof MethodReference call
+            && call.getDefiningClass().equals("Lapp/morphe/extension/swiftkey/ToolbarHooks;")
+            && call.getName().equals("bindEditor")).count();
+        require(editorHooks == 1, "Native Reorder items does not open the variable-count editor");
         require(instructions(method(classes, "Lei0/j;", "b", 1)).get(0).getOpcode() == Opcode.RETURN_VOID,
             "Telemetry dispatch is not disabled");
         for (String name : List.of("i", "m")) {
@@ -71,6 +77,6 @@ class VerifyPatchedApk {
             require(body.get(0).getOpcode() == Opcode.SGET_OBJECT && body.get(1).getOpcode() == Opcode.RETURN_OBJECT,
                 "Telemetry upload was not short-circuited: " + name);
         }
-        System.out.println("Verified emitted DEX: toolbar View receiver, editor, telemetry dispatcher and both upload methods.");
+        System.out.println("Verified emitted DEX: native editor entry, toolbar View receiver, editor, telemetry dispatcher and both upload methods.");
     }
 }

@@ -4,6 +4,7 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
@@ -11,6 +12,8 @@ import app.morphe.patcher.util.addFreeRegisters
 import app.morphe.patcher.util.p0Register
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import hooman.morphe.patches.swiftkey.swiftKeyCompatibility
@@ -27,6 +30,11 @@ private object ToolbarRenderFingerprint : Fingerprint(
 private object ToolbarStateFingerprint : Fingerprint(
     name = "toString", returnType = "Ljava/lang/String;", parameters = emptyList(),
     strings = listOf("ToolbarItemState(dynamicToolbarItems=")
+)
+// The More menu's controller owns the click listener opening the stock six-slot editor.
+private object ToolbarEditorEntryFingerprint : Fingerprint(
+    definingClass = "Lrd0/p1;", name = "<init>", returnType = "V",
+    strings = listOf("toolbarPanel"),
 )
 
 private val customToolbarResources = resourcePatch {
@@ -89,12 +97,27 @@ private val customToolbarResources = resourcePatch {
 val customToolbarPatch = bytecodePatch(
     name = "Customise toolbar",
     description = "Adds a local toolbar editor to SwiftKey settings. Choose and reorder shortcuts; " +
-        "native layout distributes the visible icons and More options remains available.",
+        "the native Reorder items button opens it too. Choose fewer or more shortcuts; " +
+        "native layout distributes visible icons and More options remains available.",
 ) {
     compatibleWith(swiftKeyCompatibility)
     dependsOn(customToolbarResources)
     extendWith("extensions/swiftkey.mpe")
     execute {
+        val entry = ToolbarEditorEntryFingerprint.method
+        val clickSites = entry.instructions.withIndex().filter { (_, instruction) ->
+            ((instruction as? ReferenceInstruction)?.reference as? MethodReference)?.toString() ==
+                "Landroid/view/View;->setOnClickListener(Landroid/view/View\$OnClickListener;)V"
+        }
+        if (clickSites.size != 1) throw PatchException("SwiftKey: toolbar editor entry was not unique")
+        val click = clickSites.single()
+        val replacement = when (val instruction = click.value) {
+            is FiveRegisterInstruction -> "invoke-static {v${instruction.registerC}, v${instruction.registerD}}, "
+            is RegisterRangeInstruction -> "invoke-static/range {v${instruction.startRegister} .. v${instruction.startRegister + 1}}, "
+            else -> throw PatchException("SwiftKey: unsupported editor click invocation")
+        } + "$HOOKS->bindEditor(Landroid/view/View;Landroid/view/View\$OnClickListener;)V"
+        entry.replaceInstruction(click.index, replacement)
+
         val state = ToolbarStateFingerprint.method.definingClass
         val stateClass = classDefBy(state)
         val expectedFields = mapOf("a" to "Ljava/util/List;", "b" to "Ljava/util/ArrayList;",

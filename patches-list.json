@@ -1,10 +1,10 @@
 {
   "NOTE": "Generated from the compiled MPP by :catalog:generatePatchesList. Do not edit manually.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "patches": [
     {
       "name": "Customise toolbar",
-      "description": "Adds a local toolbar editor to SwiftKey settings. Choose and reorder shortcuts; native layout distributes the visible icons and More options remains available.",
+      "description": "Adds a local toolbar editor to SwiftKey settings. Choose and reorder shortcuts; the native Reorder items button opens it too. Choose fewer or more shortcuts; native layout distributes visible icons and More options remains available.",
       "default": true,
       "category": null,
       "compatiblePackages": [
