@@ -24,3 +24,9 @@ and validates source metadata; it is a build tool and is not included in the MPP
 SwiftKey is Microsoft's application. Its APKs, split APKs, decompiled source,
 native libraries, signing keys and patched application are not distributed
 in this repository or its releases.
+
+## Custom clipboard fork (2026-11-10)
+
+Based on murilosimao/swiftkey-patch v0.1.1, commit 2d6d054b387d5b39a8d35d35d335a478a542306b, under GPL-3.0.
+Added persistent local clipboard retention, overflow-safe ordering, verification scripts, and fork documentation.
+All upstream attribution and the GPL-3.0 license are preserved. This is not an upstream release.

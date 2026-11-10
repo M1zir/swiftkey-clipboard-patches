@@ -8,11 +8,11 @@ val extensionBundle = project(":extensions:swiftkey").layout.buildDirectory.file
 tasks.jar {
     dependsOn(":extensions:swiftkey:bundle")
     from(extensionBundle) { into("extensions") }
-    manifest.attributes(mapOf("Name" to "Murilo's SwiftKey Clean Patches", "Version" to project.version,
-        "Description" to "Private SwiftKey customisation with local toolbar preferences",
-        "Author" to "Murilo; SwiftKey privacy patches adapted from arandomhooman",
-        "Source" to "https://github.com/murilosimao/swiftkey-patch",
-        "Website" to "https://github.com/murilosimao/swiftkey-patch",
+    manifest.attributes(mapOf("Name" to "M1zir’s SwiftKey Clipboard Patches", "Version" to project.version,
+        "Description" to "Persistent local clipboard history and optional SwiftKey customisations",
+        "Author" to "Abubakr Ahmed (M1zir); original patches by Murilo and arandomhooman",
+        "Source" to providers.gradleProperty("patchRepository").get(),
+        "Website" to providers.gradleProperty("patchRepository").get(),
         "License" to "GPLv3", "Patcher-Version" to "2.3.0"))
 }
 val dexDir = layout.buildDirectory.dir("dex")
@@ -29,7 +29,7 @@ val dex by tasks.registering(JavaExec::class) {
 }
 tasks.register<Jar>("buildAndroid") {
     dependsOn(dex)
-    archiveBaseName = "swiftkey-clean-patches"; archiveExtension = "mpp"
+    archiveBaseName = "swiftkey-clipboard-patches"; archiveExtension = "mpp"
     from(zipTree(tasks.jar.get().archiveFile)); from(dexDir)
     manifest.from(tasks.jar.get().manifest)
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE

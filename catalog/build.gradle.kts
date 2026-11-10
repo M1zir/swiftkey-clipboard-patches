@@ -8,7 +8,7 @@ tasks.register<JavaExec>("generatePatchesList") {
     classpath = sourceSets.main.get().runtimeClasspath
     mainClass = "util.PatchListGeneratorKt"
     workingDir = rootProject.projectDir
-    val bundle = rootProject.file("patches/build/libs/swiftkey-clean-patches-${project.version}.mpp")
+    val bundle = rootProject.file("patches/build/libs/swiftkey-clipboard-patches-${project.version}.mpp")
     val catalog = rootProject.file("patches-list.json")
     inputs.file(bundle); inputs.file(rootProject.file("patches-bundle.json")); outputs.file(catalog)
     args(bundle.absolutePath, catalog.absolutePath)

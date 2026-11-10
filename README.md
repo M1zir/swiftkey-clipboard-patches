@@ -1,117 +1,102 @@
-# SwiftKey Clean Patches
+# M1zir’s SwiftKey Clipboard Patches
 
-Patches incrementais para **Microsoft SwiftKey 9.13.19.3** (`com.touchtype.swiftkey`,
-version code `1236467760`). Projeto independente, sem vínculo com Microsoft ou Morphe.
+Maintained by **Abubakr Ahmed (M1zir)**.
 
-| Patch | Resultado |
-|---|---|
-| Disable cloud sign-in prompt | Desativa as decisões de convite automático ao login na tela inicial. Configuração local e login manual continuam disponíveis. |
-| Disable telemetry | Interrompe os registros e upload de telemetria identificados, Adjust e a coleta descrita no patch original. Não representa uma auditoria de todo o tráfego de rede do app. |
-| Customise toolbar | Adiciona um editor para selecionar a quantidade e a ordem dos atalhos. O botão **Reordenar itens** do teclado também abre esse editor. |
+Experimental Morphe bundle for **Microsoft SwiftKey 9.13.19.3**
+(`com.touchtype.swiftkey`). Based on
+[murilosimao/swiftkey-patch v0.1.1](https://github.com/murilosimao/swiftkey-patch/releases/tag/v0.1.1),
+commit `2d6d054b387d5b39a8d35d35d335a478a542306b`.
 
-Os dois primeiros patches foram adaptados do [Hooman](https://github.com/arandomhooman/hoomans-morphe-patches).
-Veja [atribuição e licenças](THIRD_PARTY_NOTICES.md).
+[Add this source to Morphe](https://morphe.software/add-source?github=M1zir/swiftkey-clipboard-patches) · [Releases](https://github.com/M1zir/swiftkey-clipboard-patches/releases)
 
-## Adicionar ao Morphe
+## Use on Android
 
-Em **Fontes → Adicionar → Remota**, use:
+1. Copy **swiftkey-clipboard-patches-0.2.0.mpp** to your Android device.
+2. In Morphe, open **Sources → Add → Local** and select that file.
+3. Select an **original, unpatched SwiftKey 9.13.19.3 APK**.
+4. Select **Keep clipboard history forever**. Deselect the other three patches
+   if you only want clipboard history.
+5. Patch the app and install the resulting APK through Morphe.
+6. Turn on **Rich input → Clipboard → Remember copied items** in SwiftKey.
 
-```text
-https://github.com/murilosimao/swiftkey-patch
-```
+Menu wording can vary. The bundle includes JVM classes and DEX for Desktop and
+Android loaders. Desktop application was verified; Android Manager import and
+operation still need a device test.
 
-Ou abra [Adicionar fonte no Morphe](https://morphe.software/add-source?github=murilosimao/swiftkey-patch).
-Para adicionar ao índice comunitário, informe a mesma URL do repositório.
-O arquivo `patches-list.json` na raiz é o catálogo que esse formulário consulta;
-`patches-bundle.json` aponta para o `.mpp` da release. O ícone próprio é opcional.
+The modified APK has a different signature from Microsoft's app. Android may
+refuse to install it over the official installation. Save important clips and
+settings before any uninstall, which erases local app data. Keep Morphe's signing
+key for future updates.
 
-Também é possível baixar o `.mpp` da [release experimental](https://github.com/murilosimao/swiftkey-patch/releases/tag/v0.1.1)
-e adicioná-lo como fonte **Local**. O carregamento no Manager ainda precisa ser
-validado no Android; a geração e aplicação pelo Desktop foram verificadas.
+## Behavior
 
-## Toolbar
+The new patch disables local age expiry and fixes timestamp comparison for clips
+weeks or years apart. It preserves manual deletion, pin/unpin, clipboard
+enable/disable, and the existing save/load code.
 
-1. No teclado, abra **Mais opções → Reordenar itens**. A partir da 0.1.1, ele abre o novo editor **Atalhos da barra**. Também há acesso em **Configurações → Personalizar toolbar**, abaixo de **Layout e teclas**.
-2. Desmarque os itens que não quer mostrar e use ↑ / ↓ para ordenar. Por exemplo, deixe apenas Área de transferência e GIF: a barra terá esses dois atalhos e Mais opções.
-3. Toque em **Salvar alterações** e abra o teclado novamente.
+No fixed entry-count cap was found in this version's local collection and JSON
+save/load paths, so no numeric limit replacement is needed. “Forever” means no
+automatic age expiry, not infinite device storage. SwiftKey loads the list and
+rewrites it when saving; very large histories can become slow. Expired clips
+cannot be recovered.
 
-Não é necessário preencher seis posições. O editor de arrastar com seis posições
-das versões anteriores era a tela original do SwiftKey; a versão 0.1.0 ainda
-deixava o botão do teclado abrindo essa tela. A versão 0.1.1 corrige esse acesso.
+Screenshots and images successfully added to SwiftKey’s clipboard use this same
+local expiry rule. SwiftKey copies screenshot images into its private
+`clipboard_images` directory. Real-device screenshot retention remains untested.
 
-As escolhas ficam no aparelho. A montagem nativa da toolbar distribui os itens
-visíveis, sem reservar espaços para os ocultos. **Mais opções** permanece acessível;
-é necessário pelo menos um outro atalho para o layout nativo. Itens indisponíveis
-naquele contexto são ignorados; Configurações serve como fallback quando possível.
-O número exibido se adapta à largura. A lista original de **Mais opções** permanece
-disponível. **Restaurar padrão do SwiftKey** devolve o controle ao app.
+Cloud sync, remote deletion, duplicate handling, and single-slot incoming cloud
+clipboard behavior remain native. This is **local history retention**, not an
+unlimited cloud archive. Image availability can depend on source URIs and files.
+The patch adds no permissions, network calls, separate clipboard collector, or
+database. SwiftKey's existing interface text is unchanged, including any mention
+of one hour.
 
-A personalização começa desligada, preservando a toolbar original até você salvar
-suas escolhas. O editor usa tema claro/escuro e não lê o texto digitado.
+The bundle retains the optional **Customise toolbar**, **Disable telemetry**,
+and **Disable cloud sign-in prompt** patches. The toolbar editor retains upstream
+Portuguese labels. See [original documentation](docs/UPSTREAM_README.md).
 
-## Estado da primeira versão
+## Validation
 
-**Experimental.** Os três patches foram aplicados ao APKM 9.13.19.3 com
-validação dos fingerprints, reconstrução e assinatura do APK. Os testes de seleção
-e da tela de edição rodam localmente. O teclado completo e o alinhamento visual
-em aparelho real ainda precisam de validação; aplicar o patch não demonstra
-compatibilidade de todos os recursos do SwiftKey.
+See [VALIDATION.md](VALIDATION.md) for the input hash, passed checks, and limitations.
+The patch validates package/version, class strings, method signatures, opcode
+sequences, and references. It stops on a changed or already patched target.
 
-O APK modificado tem outra assinatura. Não substitui normalmente uma instalação
-oficial com a mesma identificação. Planeje a migração dos dados e o teste antes
-de remover a instalação existente; este projeto não desinstala nem instala apps.
+Microsoft's [version listing](https://support.microsoft.com/en-us/swiftkey-keyboard/for-microsoft-swiftkey-commercial-partners)
+listed 9.13.19.3 as latest on 2026-11-10. Verification used its original ARM64 APK.
+Beta and future versions are not declared compatible. Apply all desired patches
+in one pass to an original APK.
 
-## Compilar
+## Build and local verification
 
-Requisitos: JDK 21+, Python 3.11+, `curl` e Android SDK com
-`platforms;android-36`. Configure `JAVA_HOME` e `ANDROID_HOME` conforme seu ambiente.
-No Mac com Homebrew, os scripts reconhecem o JDK 21 instalado pelo Homebrew.
-
-```sh
-chmod +x gradlew scripts/*.sh
-./scripts/build.sh
-```
-
-As ferramentas públicas são baixadas com versões e hashes fixos.
-**Nenhum token do GitHub é necessário para compilar.** O build usa as APIs do
-Patcher 2.3.0 incluídas no Desktop 2.1.1 como dependência somente de compilação.
-O runtime do Desktop não é empacotado no bundle.
-
-O mesmo build gera `patches-list.json` usando o gerador do template oficial,
-adaptado para ler explicitamente o bundle compilado. O gerador fica no módulo JVM
-`catalog` e não entra no `.mpp`. Ele também valida a versão, o link do artefato e a
-data dos metadados no formato do Manager. Não edite o catálogo manualmente.
-
-Saída: `patches/build/libs/swiftkey-clean-patches-0.1.1.mpp`, com classes JVM e DEX
-para os carregadores do Desktop e Android. A extensão do teclado contém apenas DEX.
-
-## Aplicar ao seu APK ou APKM original
+Requires JDK 21+, Python 3.11+, curl, and Android SDK platform 36.
+Set `JAVA_HOME` and `ANDROID_HOME`:
 
 ```sh
-./scripts/patch.sh /caminho/swiftkey-original.apkm
+python3 scripts/bootstrap.py
+./gradlew buildAndroid
+./scripts/patch.sh /absolute/path/to/original-9.13.19.3.apk
 ```
 
-Saída padrão: `artifacts/swiftkey-clean-9.13.19.3.apk` e relatório JSON em
-`artifacts/patch-result.json`. O script não instala o resultado.
-Use o arquivo original a cada build; não aplique sucessivamente sobre APKs já modificados.
-Mantenha a chave local usada pelo Desktop para assinar as próximas atualizações.
+Output: `patches/build/libs/swiftkey-clipboard-patches-0.2.0.mpp`.
+Public tools are pinned with checksums; no GitHub token is needed.
+The patch script selects only the clipboard patch and verifies its emitted
+bytecode; it does not install the APK. Test APKs and signing material stay local.
 
-Você também pode carregar o `.mpp` no Morphe Desktop. Esta primeira versão foi
-validada com Desktop 2.1.1; a execução pelo Manager no Android ainda não foi testada.
+Use `./scripts/build.sh` to also run the upstream JVM/UI tests.
+The UI tests require a Robolectric-supported host; Linux ARM64 is unsupported.
 
-## Evolução
+## Maintainer releases
 
-Ao publicar uma atualização, incremente `version` em `gradle.properties` e atualize
-`patches-bundle.json` para o novo arquivo de release. O script de aplicação lê a
-versão do projeto automaticamente.
+This source is configured for `M1zir/swiftkey-clipboard-patches`.
+Release 0.2.0 is experimental; enable pre-releases in Morphe if necessary.
+The repository owner is Abubakr Ahmed (M1zir); upstream credit is preserved.
 
-Os patches são independentes. As mudanças ficam em `patches/`; o editor e suas
-regras ficam em `extensions/swiftkey/`. A ponte para as classes ofuscadas é gerada
-ao aplicar o patch, sem empacotar classes falsas do app. Padrões ambíguos interrompem
-a aplicação em vez de selecionar arbitrariamente um método.
+For future releases, increment `version` in `gradle.properties`, run
+`python3 scripts/configure-source.py M1zir/swiftkey-clipboard-patches`, then build.
+Commit the generated catalog and metadata, tag that commit, and upload the MPP,
+`patches-bundle.json`, and `patches-list.json` to the matching release.
 
-Para atualizar o SwiftKey, analise o novo APK, ajuste os fingerprints e o alvo,
-rode os testes e aplique todos os patches desejados ao novo original. A compatibilidade
-com outras versões, incluindo a 9.13.13.5, não é declarada neste bundle.
-
-Licença: [GPL-3.0](LICENSE).
+GPL-3.0: [LICENSE](LICENSE), [attribution](THIRD_PARTY_NOTICES.md).
+Independent fork; not an official Microsoft, Morphe, or upstream release.
+Modified 2026-11-10: clipboard retention, overflow-safe sorting, verification,
+bundle identity, and documentation.

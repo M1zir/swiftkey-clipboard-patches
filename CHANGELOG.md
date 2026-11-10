@@ -1,3 +1,11 @@
+# 0.2.0 — Custom clipboard fork (2026-11-10)
+
+- Add Keep clipboard history forever for SwiftKey 9.13.19.3.
+- Fix clipboard timestamp comparison overflow for long-lived history.
+- Add emitted-DEX verification and own-source publishing configuration.
+- Retain the three existing patches and upstream licensing.
+- Experimental: Android device validation pending.
+
 # Changelog
 
 ## [0.1.1](https://github.com/murilosimao/swiftkey-patch/releases/tag/v0.1.1) (2026-11-09)
