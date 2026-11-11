@@ -11,7 +11,7 @@ commit `2d6d054b387d5b39a8d35d35d335a478a542306b`.
 
 ## Use on Android
 
-1. Copy **swiftkey-clipboard-patches-0.3.0.mpp** to your Android device.
+1. Copy **swiftkey-clipboard-patches-0.3.1.mpp** to your Android device.
 2. In Morphe, open **Sources → Add → Local** and select that file.
 3. Select an **original, unpatched SwiftKey 9.13.19.3 APK**.
 4. Select **Keep clipboard history forever**, **Restore Arabic 123 legacy layout**,
@@ -56,6 +56,10 @@ of one hour.
 The **Restore Arabic 123 legacy layout** patch exposes the original layout still
 bundled in this APK. It adds the legacy choice wherever the current Arabic 123
 layout is available, without changing the default or replacing modern layouts.
+Version 0.3.1 selects the variant whose middle row ends in **ط**, with **و** as
+the third bottom-row letter and no separate **ؤ** key. **ؤ** remains on long-press.
+If upgrading from v0.3.0, select **Arabic 123 - Legacy** again after installation;
+the previously saved layout is not switched automatically.
 The native localized name, key maps, symbols and long-press behavior are reused.
 No old APK or separate layout download is needed. See [layout details](docs/ARABIC_LAYOUT.md).
 
@@ -85,7 +89,7 @@ python3 scripts/bootstrap.py
 ./scripts/patch.sh /absolute/path/to/original-9.13.19.3.apk
 ```
 
-Output: `patches/build/libs/swiftkey-clipboard-patches-0.3.0.mpp`.
+Output: `patches/build/libs/swiftkey-clipboard-patches-0.3.1.mpp`.
 Public tools are pinned with checksums; no GitHub token is needed.
 The patch script selects only the clipboard patch and verifies its emitted
 bytecode; it does not install the APK. Test APKs and signing material stay local.
@@ -96,7 +100,7 @@ The UI tests require a Robolectric-supported host; Linux ARM64 is unsupported.
 ## Maintainer releases
 
 This source is configured for `M1zir/swiftkey-clipboard-patches`.
-Release 0.3.0 is experimental; enable pre-releases in Morphe if necessary.
+Release 0.3.1 is experimental; enable pre-releases in Morphe if necessary.
 The repository owner is Abubakr Ahmed (M1zir); upstream credit is preserved.
 
 For future releases, increment `version` in `gradle.properties`, run

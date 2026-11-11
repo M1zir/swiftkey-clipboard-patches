@@ -1,17 +1,23 @@
-# M1zir’s SwiftKey Clipboard Patches v0.3.0 (experimental)
+# M1zir’s SwiftKey Clipboard Patches v0.3.1 (experimental)
 
 Maintained by **Abubakr Ahmed (M1zir)**. Targets **Microsoft SwiftKey 9.13.19.3**
 (`com.touchtype.swiftkey`).
 
-## New: Restore Arabic 123 legacy layout
+## Fixed: the intended Arabic 123 legacy arrangement
 
-Adds **Arabic 123 - Legacy** back to the Arabic layout chooser using the original
-layout still bundled in SwiftKey. The current layouts and default selection stay
-intact. No old APK or separate layout download is required.
+SwiftKey contains two different layouts named **Arabic 123 - Legacy**. Version
+0.3.0 exposed the wrong one for the requested arrangement. This release selects
+the correct native variant:
+
+- **ط** is at the end of the middle letter row.
+- **و** is the third letter on the bottom row.
+- There is **no separate ؤ key**; ؤ remains available by long-pressing و.
 
 Enable **Restore Arabic 123 legacy layout** when patching, then open
-**SwiftKey → Languages → your Arabic language** and choose **Arabic 123 - Legacy**.
-The patch is independently selectable and can be combined with clipboard retention.
+**SwiftKey → Languages → your Arabic language** and select **Arabic 123 - Legacy**.
+**Select it again even if you used the legacy choice in v0.3.0**: the saved
+selection is not automatically migrated. The current layouts and default remain
+available. Clipboard retention is unchanged.
 
 ## Included patches
 
@@ -31,9 +37,9 @@ limits; expired clips cannot be recovered and cloud behavior is unchanged.
 [Add source to Morphe](https://morphe.software/add-source?github=M1zir/swiftkey-clipboard-patches)
 
 Enable pre-releases for this experimental source if needed, then refresh it.
-Alternatively download `swiftkey-clipboard-patches-0.3.0.mpp` below and import it
+Alternatively download `swiftkey-clipboard-patches-0.3.1.mpp` below and import it
 through **Sources → Add → Local**. Apply all desired patches in one pass to an
-**original, unpatched SwiftKey 9.13.19.3 APK**, including when updating from v0.2.0.
+**original, unpatched SwiftKey 9.13.19.3 APK**, including when updating from v0.3.0.
 For clipboard retention, enable **Remember copied items** in SwiftKey.
 
 Use the same Morphe signing key as your previous patched installation to permit
@@ -44,9 +50,11 @@ Android may refuse to install over it. Save important data before any uninstall.
 
 Applied the layout patch alone and all five patches together to Microsoft’s
 original ARM64 APK using Morphe Desktop 2.1.1 / Patcher 2.3.0. Both APKs rebuilt
-and signed. Each passed 295 layout behavior assertions and 111 structural/resource
-checks on the emitted DEX. The combined output also passed 394 clipboard behavior
-assertions and the upstream toolbar/telemetry verifier. Repatching is rejected.
+and signed. Each passed 380 layout behavior assertions and 144 structural/resource
+checks on the emitted DEX and decoded key-map resources. These now verify the
+actual letter rows and distinguish primary keys from long-press alternatives.
+The new tests also reject the incorrect v0.3.0 output. The combined output passed
+394 clipboard behavior assertions and the upstream toolbar/telemetry verifier.
 
 **These are bytecode execution-model checks. Android Manager import, actual
 Arabic typing/layout previews, clipboard retention and large-history performance

@@ -1,3 +1,11 @@
+# 0.3.1 — Correct Arabic legacy variant (2026-11-11)
+
+- Fix the restored variant: SwiftKey has two layouts with the same Arabic 123 - Legacy label.
+- Select the arrangement ending the middle row with ط, with و as the third bottom-row letter and no dedicated ؤ key.
+- Keep ؤ available on long-press and preserve the native key maps.
+- Add binary key-map assertions for standard, compact and PC modes to distinguish primary keys from alternatives.
+- When updating from v0.3.0, reselect Arabic 123 - Legacy in Languages.
+
 # 0.3.0 — Arabic 123 legacy layout (2026-11-11)
 
 - Add the separately selectable Restore Arabic 123 legacy layout patch.

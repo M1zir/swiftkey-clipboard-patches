@@ -1,5 +1,27 @@
 # Validation
 
+## Version 0.3.1 — 2026-11-11
+
+Corrected the Arabic legacy variant after the user's device screenshots showed
+that v0.3.0 exposed a different layout with the same visible name. The intended
+variant is `ARABIC_3_WESTERN`, not `ARABIC_WESTERN`.
+
+- Layout-only and all-five-patch APKs rebuilt and signed with strict fingerprints.
+- Each output passed 380 layout behavior assertions and 144 structural/resource
+  checks. New checks decode the binary key maps and assert the letter arrangement
+  in standard, compact and PC modes: middle row ends in ط, the third bottom-row
+  letter is و, and there is no dedicated ؤ key. Long-press ؤ is preserved.
+- A negative fixture confirms the modern variant has a dedicated ؤ key.
+- The new verifier rejects the actual incorrect v0.3.0 APK output.
+- The combined output also passed 394 clipboard behavior assertions and the
+  upstream toolbar/telemetry verifier.
+- Previous tests checked chooser behavior and unchanged resources but did not
+  establish which of the two identically labeled layouts the user intended.
+  The new key-level checks address that gap.
+
+Physical-device confirmation of the corrected arrangement is still pending.
+Users updating from v0.3.0 must reselect Arabic 123 - Legacy in Languages.
+
 ## Version 0.3.0 — 2026-11-11
 
 Added **Restore Arabic 123 legacy layout** as a fifth selectable patch, using the
@@ -14,7 +36,7 @@ same original SwiftKey 9.13.19.3 ARM64 APK and pinned tools listed below.
 - Combined output: all 394 clipboard behavior assertions and the upstream
   toolbar/telemetry DEX verifier passed again.
 - Repatching the restored-layout APK is rejected without producing an APK.
-- Original Arabic legacy key-map JSON files are unchanged; native layout enum,
+- Original Arabic legacy key-map resource files are unchanged; native layout enum,
   selection and persistence code are preserved.
 
 See [Arabic layout evidence and reproduction](docs/ARABIC_LAYOUT.md). The tests

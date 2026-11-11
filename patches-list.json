@@ -1,6 +1,6 @@
 {
   "NOTE": "Generated from the compiled MPP by :catalog:generatePatchesList. Do not edit manually.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "patches": [
     {
       "name": "Customise toolbar",
@@ -112,7 +112,7 @@
     },
     {
       "name": "Restore Arabic 123 legacy layout",
-      "description": "Adds the built-in Arabic 123 - Legacy layout back to the Arabic layout chooser. Keeps the current layouts and default selection. Select the restored layout in SwiftKey Languages.",
+      "description": "Restores the Arabic 123 legacy arrangement with و as the third bottom-row letter and no separate ؤ key. Keeps the current layouts and default selection. Select the restored layout in SwiftKey Languages.",
       "default": true,
       "category": null,
       "compatiblePackages": [

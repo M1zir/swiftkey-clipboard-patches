@@ -3,17 +3,21 @@ import com.android.tools.smali.dexlib2.iface.instruction.*;
 import com.android.tools.smali.dexlib2.iface.reference.*;
 import java.util.*;
 import java.util.zip.ZipFile;
+import java.util.zip.InflaterInputStream;
+import java.io.DataInputStream;
+import java.io.InputStream;
 
 /** Executes the actual chooser DEX using a limited model; not Android/ART testing.
  * Compile alongside VerifyClipboardPatch.java, which supplies DEX/signature helpers.
  */
 class VerifyArabicLayoutPatch {
     enum Layout {
-        ARABIC_WESTERN, ARABIC_WESTERN_V2, ARABIC_V2, ARABIC_2,
+        ARABIC_WESTERN, ARABIC_WESTERN_V2, ARABIC_3_WESTERN, ARABIC_V2, ARABIC_2,
         ARABIC_2_WESTERN, ARABIC_3_V2, ARABIC_3_WESTERN_V2,
         QWERTY, AZERTY, ARABIC_FARSI, ARABIC_URDU
     }
     record Pack(Layout primary, List<Layout> alternates) {}
+    record Key(String label, String output, String alternatives) {}
     static int checks;
     static void check(boolean ok, String message) {
         checks++;
@@ -21,6 +25,54 @@ class VerifyArabicLayoutPatch {
     }
     static String reference(Instruction i) {
         return ((ReferenceInstruction)i).getReference().toString();
+    }
+    // SwiftKey's .json-named key maps are zlib-compressed binary records.
+    // Read their actual primary labels separately from long-press alternatives;
+    // a flat string search cannot distinguish و from a dedicated ؤ key.
+    static List<List<Key>> readKeyRows(InputStream input) throws Exception {
+        try (var data = new DataInputStream(new InflaterInputStream(input))) {
+            check(data.readInt() == 1 && data.readInt() == 3, "Unexpected key-map schema");
+            data.readBoolean(); data.readUTF();
+            data.readDouble(); data.readDouble(); data.readUTF();
+            int count = data.readInt();
+            check(count > 3 && count < 100, "Invalid row count");
+            var rows = new ArrayList<List<Key>>();
+            for (int row = 0; row < count; row++) {
+                data.readShort(); data.readShort(); data.readBoolean(); data.readDouble();
+                int size = data.readInt();
+                if (size < 0 || size > 100) throw new AssertionError("Invalid key count");
+                var keys = new ArrayList<Key>();
+                for (int key = 0; key < size; key++) {
+                    data.skipNBytes(32); // six shorts, two doubles, four booleans
+                    String[] fields = new String[6];
+                    for (int f = 0; f < fields.length; f++) fields[f] = data.readUTF();
+                    keys.add(new Key(fields[4], fields[3], fields[5]));
+                    data.readDouble(); data.readBoolean();
+                    if (!data.readBoolean()) data.readUTF();
+                    data.skipNBytes(32); // four geometry doubles
+                }
+                rows.add(keys);
+            }
+            return rows;
+        }
+    }
+    static void verifyRequestedArrangement(List<List<Key>> rows) {
+        String[][] expected = {
+            {"ض", "ص", "ث", "ق", "ف", "غ", "ع", "ه", "خ", "ح", "ج"},
+            {"ش", "س", "ي", "ب", "ل", "ا", "ت", "ن", "م", "ك", "ط"},
+            {"ذ", "ء", "و", "ر", "ى", "ة", "ز", "ظ", "د"},
+        };
+        for (int row = 0; row < expected.length; row++) {
+            var labels = rows.get(row + 1).stream().map(Key::label).toList();
+            check(labels.size() >= expected[row].length &&
+                labels.subList(0, expected[row].length).equals(Arrays.asList(expected[row])),
+                "Wrong legacy letter arrangement on row " + row);
+            check(!labels.contains("ؤ"), "Dedicated ؤ key present");
+        }
+        Key waw = rows.get(3).get(2);
+        check(waw.label().equals("و") && (waw.output().isEmpty() || waw.output().equals("و")),
+            "Waw key label/output is not و");
+        check(waw.alternatives().contains("ؤ"), "Native long-press ؤ was lost");
     }
     @SuppressWarnings("unchecked")
     static List<Layout> execute(Method method, Pack pack) {
@@ -102,8 +154,8 @@ class VerifyArabicLayoutPatch {
         var before = execute(original, pack);
         var after = execute(patched, pack);
         var expected = new ArrayList<>(before);
-        if (before.contains(Layout.ARABIC_WESTERN_V2) && !before.contains(Layout.ARABIC_WESTERN))
-            expected.add(Layout.ARABIC_WESTERN);
+        if (before.contains(Layout.ARABIC_3_WESTERN_V2) && !before.contains(Layout.ARABIC_3_WESTERN))
+            expected.add(Layout.ARABIC_3_WESTERN);
         check(after.equals(expected), "Incorrect layout list for " + pack);
         check(after.getFirst() == pack.primary(), "Default selection moved");
         check(pack.alternates().equals(originalAlternates), "Stored pack data was mutated");
@@ -138,10 +190,16 @@ class VerifyArabicLayoutPatch {
         }
         try (ZipFile a = new ZipFile(args[0]); ZipFile b = new ZipFile(args[1])) {
             for (String suffix : List.of("", "_compact", "_pc")) {
-                String name = "res/raw/keyboard_layout_standard_arabic_western" + suffix + ".json";
+                String name = "res/raw/keyboard_layout_standard_arabic_3_western" + suffix + ".json";
                 check(Arrays.equals(a.getInputStream(a.getEntry(name)).readAllBytes(),
                     b.getInputStream(b.getEntry(name)).readAllBytes()), "Legacy key map changed: " + name);
+                verifyRequestedArrangement(readKeyRows(b.getInputStream(b.getEntry(name))));
             }
+            // Guard against the specific regression: the similarly named modern
+            // variant has ؤ at this position; the restored legacy one has و.
+            String modern = "res/raw/keyboard_layout_standard_arabic_3_western_v2.json";
+            check(readKeyRows(a.getInputStream(a.getEntry(modern))).get(3).get(2).label().equals("ؤ"),
+                "Modern-layout regression fixture changed");
         }
         int structural = checks;
         // Exact layouts from Microsoft's four Arabic model archives, inspected 2026-11-11.
@@ -154,7 +212,8 @@ class VerifyArabicLayoutPatch {
         // Default modern/legacy, existing legacy, empty alternatives, non-Arabic,
         // mixed lists, and subsequent language-pack refreshes.
         for (Layout primary : Layout.values()) {
-            for (List<Layout> alternatives : List.of(List.<Layout>of(), List.of(Layout.ARABIC_WESTERN_V2),
+            for (List<Layout> alternatives : List.of(List.<Layout>of(), List.of(Layout.ARABIC_3_WESTERN_V2),
+                    List.of(Layout.ARABIC_3_WESTERN_V2, Layout.ARABIC_3_WESTERN),
                     List.of(Layout.ARABIC_WESTERN_V2, Layout.ARABIC_WESTERN),
                     List.of(Layout.QWERTY, Layout.AZERTY), List.of(Layout.ARABIC_FARSI, Layout.ARABIC_URDU)))
                 exercise(oldMethod, newMethod, new Pack(primary, alternatives));
