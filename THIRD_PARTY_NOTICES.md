@@ -30,3 +30,9 @@ in this repository or its releases.
 Based on murilosimao/swiftkey-patch v0.1.1, commit 2d6d054b387d5b39a8d35d35d335a478a542306b, under GPL-3.0.
 Added persistent local clipboard retention, overflow-safe ordering, verification scripts, and fork documentation.
 All upstream attribution and the GPL-3.0 license are preserved. This is not an upstream release.
+
+## Arabic layout restoration (2026-11-11)
+
+Added an optional patch exposing SwiftKey’s existing Arabic 123 legacy layout,
+with emitted-DEX verification and documentation. Microsoft’s original layout
+assets remain in the input APK and are not copied into the patch bundle.

@@ -24,6 +24,10 @@ jobs:
           log-accepted-android-sdk-licenses: 'false'
       - name: Build bundle and run JVM tests
         run: ./scripts/build.sh
+      - name: Compile APK verification tools
+        run: |
+          mkdir -p build/verification-classes
+          javac -cp tools/morphe-desktop-2.1.1-all.jar -d build/verification-classes scripts/Verify*.java
       - name: Verify committed catalog matches the bundle
         run: git diff --exit-code -- patches-list.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

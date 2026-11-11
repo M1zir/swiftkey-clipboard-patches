@@ -9,7 +9,7 @@ tasks.jar {
     dependsOn(":extensions:swiftkey:bundle")
     from(extensionBundle) { into("extensions") }
     manifest.attributes(mapOf("Name" to "M1zir’s SwiftKey Clipboard Patches", "Version" to project.version,
-        "Description" to "Persistent local clipboard history and optional SwiftKey customisations",
+        "Description" to "Persistent clipboard history, Arabic 123 legacy layout, and optional SwiftKey customisations",
         "Author" to "Abubakr Ahmed (M1zir); original patches by Murilo and arandomhooman",
         "Source" to providers.gradleProperty("patchRepository").get(),
         "Website" to providers.gradleProperty("patchRepository").get(),

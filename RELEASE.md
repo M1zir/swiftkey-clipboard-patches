@@ -1,47 +1,60 @@
-# M1zir’s SwiftKey Clipboard Patches v0.2.0 (experimental)
+# M1zir’s SwiftKey Clipboard Patches v0.3.0 (experimental)
 
 Maintained by **Abubakr Ahmed (M1zir)**. Targets **Microsoft SwiftKey 9.13.19.3**
 (`com.touchtype.swiftkey`).
 
-## New: Keep clipboard history forever
+## New: Restore Arabic 123 legacy layout
 
-Removes the one-hour expiration for local clipboard entries and fixes timestamp
-sorting for entries weeks apart. Screenshots and images that SwiftKey successfully
-adds to its clipboard use the same expiration rule. Pinning, manual deletion,
-and normal save/load behavior are preserved.
+Adds **Arabic 123 - Legacy** back to the Arabic layout chooser using the original
+layout still bundled in SwiftKey. The current layouts and default selection stay
+intact. No old APK or separate layout download is required.
 
-No fixed local entry-count cap was found in the inspected storage paths. Device
-storage and memory still set practical limits. Expired clips cannot be recovered;
-cloud clipboard behavior is unchanged.
+Enable **Restore Arabic 123 legacy layout** when patching, then open
+**SwiftKey → Languages → your Arabic language** and choose **Arabic 123 - Legacy**.
+The patch is independently selectable and can be combined with clipboard retention.
 
-## Install
+## Included patches
+
+- Restore Arabic 123 legacy layout
+- Keep clipboard history forever
+- Customise toolbar
+- Disable cloud sign-in prompt
+- Disable telemetry
+
+Clipboard retention still removes local one-hour expiration, including images
+saved to SwiftKey’s clipboard, and fixes sorting for entries weeks apart.
+Manual deletion and pinning are preserved. Storage and memory set practical
+limits; expired clips cannot be recovered and cloud behavior is unchanged.
+
+## Install or update
 
 [Add source to Morphe](https://morphe.software/add-source?github=M1zir/swiftkey-clipboard-patches)
 
-Enable pre-releases for this experimental source if needed. Alternatively, download
-`swiftkey-clipboard-patches-0.2.0.mpp` below and import it through
-**Sources → Add → Local**. Patch an **original SwiftKey 9.13.19.3 APK**, select
-**Keep clipboard history forever**, and enable **Remember copied items** in SwiftKey.
-Deselect the other patches if only clipboard retention is wanted.
+Enable pre-releases for this experimental source if needed, then refresh it.
+Alternatively download `swiftkey-clipboard-patches-0.3.0.mpp` below and import it
+through **Sources → Add → Local**. Apply all desired patches in one pass to an
+**original, unpatched SwiftKey 9.13.19.3 APK**, including when updating from v0.2.0.
+For clipboard retention, enable **Remember copied items** in SwiftKey.
 
-Android may refuse installation over the official app because signatures differ.
-Save important clips/settings before any uninstall, which erases local app data.
+Use the same Morphe signing key as your previous patched installation to permit
+an in-place update. The official Microsoft installation has a different signature;
+Android may refuse to install over it. Save important data before any uninstall.
 
 ## Validation
 
-Built and applied using Morphe Desktop 2.1.1 / Patcher 2.3.0 to Microsoft's original
-ARM64 APK, both alone and with all three retained upstream patches. Strict
-fingerprint checks passed, the APKs rebuilt and signed, and 394 emitted-bytecode
-behavior assertions passed on each output. Repatching an already modified APK is
-rejected. Six upstream JVM tests passed; eight toolbar UI tests could not run
-because their Robolectric native runtime does not support the Linux ARM64 host.
+Applied the layout patch alone and all five patches together to Microsoft’s
+original ARM64 APK using Morphe Desktop 2.1.1 / Patcher 2.3.0. Both APKs rebuilt
+and signed. Each passed 295 layout behavior assertions and 111 structural/resource
+checks on the emitted DEX. The combined output also passed 394 clipboard behavior
+assertions and the upstream toolbar/telemetry verifier. Repatching is rejected.
 
-**Android Manager import, actual device retention (including screenshots), and
-large-history performance remain untested.** See VALIDATION.md for details.
+**These are bytecode execution-model checks. Android Manager import, actual
+Arabic typing/layout previews, clipboard retention and large-history performance
+still require physical-device testing.** See VALIDATION.md and docs/ARABIC_LAYOUT.md.
 
 ## Attribution
 
-Based on murilosimao/swiftkey-patch v0.1.1, with the optional toolbar and privacy
-patches retained. Upstream credit to Murilo and arandomhooman is preserved.
-GPL-3.0; this is an independent custom fork, not an official upstream release.
-No SwiftKey APKs, decompiled application code, or signing keys are distributed.
+Independent GPL-3.0 fork of murilosimao/swiftkey-patch v0.1.1, preserving credit
+to Murilo and arandomhooman. Not an official Microsoft, Morphe or upstream release.
+No SwiftKey APKs, original layout assets, decompiled app code or signing keys are
+distributed.

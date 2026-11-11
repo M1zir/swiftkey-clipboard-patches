@@ -11,13 +11,15 @@ commit `2d6d054b387d5b39a8d35d35d335a478a542306b`.
 
 ## Use on Android
 
-1. Copy **swiftkey-clipboard-patches-0.2.0.mpp** to your Android device.
+1. Copy **swiftkey-clipboard-patches-0.3.0.mpp** to your Android device.
 2. In Morphe, open **Sources → Add → Local** and select that file.
 3. Select an **original, unpatched SwiftKey 9.13.19.3 APK**.
-4. Select **Keep clipboard history forever**. Deselect the other three patches
-   if you only want clipboard history.
+4. Select **Keep clipboard history forever**, **Restore Arabic 123 legacy layout**,
+   or both. Deselect any other patches you do not want.
 5. Patch the app and install the resulting APK through Morphe.
-6. Turn on **Rich input → Clipboard → Remember copied items** in SwiftKey.
+6. For clipboard retention, turn on **Rich input → Clipboard → Remember copied items**.
+7. For the legacy layout, open **SwiftKey → Languages**, select your enabled Arabic
+   language, and choose **Arabic 123 - Legacy** in its layout chooser.
 
 Menu wording can vary. The bundle includes JVM classes and DEX for Desktop and
 Android loaders. Desktop application was verified; Android Manager import and
@@ -30,7 +32,7 @@ key for future updates.
 
 ## Behavior
 
-The new patch disables local age expiry and fixes timestamp comparison for clips
+The clipboard patch disables local age expiry and fixes timestamp comparison for clips
 weeks or years apart. It preserves manual deletion, pin/unpin, clipboard
 enable/disable, and the existing save/load code.
 
@@ -50,6 +52,12 @@ unlimited cloud archive. Image availability can depend on source URIs and files.
 The patch adds no permissions, network calls, separate clipboard collector, or
 database. SwiftKey's existing interface text is unchanged, including any mention
 of one hour.
+
+The **Restore Arabic 123 legacy layout** patch exposes the original layout still
+bundled in this APK. It adds the legacy choice wherever the current Arabic 123
+layout is available, without changing the default or replacing modern layouts.
+The native localized name, key maps, symbols and long-press behavior are reused.
+No old APK or separate layout download is needed. See [layout details](docs/ARABIC_LAYOUT.md).
 
 The bundle retains the optional **Customise toolbar**, **Disable telemetry**,
 and **Disable cloud sign-in prompt** patches. The toolbar editor retains upstream
@@ -77,7 +85,7 @@ python3 scripts/bootstrap.py
 ./scripts/patch.sh /absolute/path/to/original-9.13.19.3.apk
 ```
 
-Output: `patches/build/libs/swiftkey-clipboard-patches-0.2.0.mpp`.
+Output: `patches/build/libs/swiftkey-clipboard-patches-0.3.0.mpp`.
 Public tools are pinned with checksums; no GitHub token is needed.
 The patch script selects only the clipboard patch and verifies its emitted
 bytecode; it does not install the APK. Test APKs and signing material stay local.
@@ -88,7 +96,7 @@ The UI tests require a Robolectric-supported host; Linux ARM64 is unsupported.
 ## Maintainer releases
 
 This source is configured for `M1zir/swiftkey-clipboard-patches`.
-Release 0.2.0 is experimental; enable pre-releases in Morphe if necessary.
+Release 0.3.0 is experimental; enable pre-releases in Morphe if necessary.
 The repository owner is Abubakr Ahmed (M1zir); upstream credit is preserved.
 
 For future releases, increment `version` in `gradle.properties`, run
@@ -98,5 +106,5 @@ Commit the generated catalog and metadata, tag that commit, and upload the MPP,
 
 GPL-3.0: [LICENSE](LICENSE), [attribution](THIRD_PARTY_NOTICES.md).
 Independent fork; not an official Microsoft, Morphe, or upstream release.
-Modified 2026-11-10: clipboard retention, overflow-safe sorting, verification,
+Modified 2026-11-10/11: Arabic 123 legacy layout restoration, clipboard retention, overflow-safe sorting, verification,
 bundle identity, and documentation.

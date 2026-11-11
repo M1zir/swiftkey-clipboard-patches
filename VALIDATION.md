@@ -1,4 +1,28 @@
-# Validation — 2026-11-10
+# Validation
+
+## Version 0.3.0 — 2026-11-11
+
+Added **Restore Arabic 123 legacy layout** as a fifth selectable patch, using the
+same original SwiftKey 9.13.19.3 ARM64 APK and pinned tools listed below.
+
+- Arabic patch alone: strict fingerprint validation, APK rebuild and signing passed.
+- All five patches together: strict validation, rebuild and signing passed.
+- Actual emitted layout DEX: 295 behavior assertions and 111 structural/resource
+  checks passed on each output. Covers all four Arabic model configurations,
+  existing legacy entries, default selection, other languages, repeated reads,
+  immutable results and unchanged stored pack data.
+- Combined output: all 394 clipboard behavior assertions and the upstream
+  toolbar/telemetry DEX verifier passed again.
+- Repatching the restored-layout APK is rejected without producing an APK.
+- Original Arabic legacy key-map JSON files are unchanged; native layout enum,
+  selection and persistence code are preserved.
+
+See [Arabic layout evidence and reproduction](docs/ARABIC_LAYOUT.md). The tests
+execute a limited model of the emitted DEX, not Android ART. No attached Android
+device was available. Actual chooser/preview, typing, long-press characters,
+symbols, compact/PC variants and selection after restart still need device tests.
+
+## Version 0.2.0 — 2026-11-10
 
 ## Verified input and tools
 

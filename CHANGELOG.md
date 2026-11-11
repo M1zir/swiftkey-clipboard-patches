@@ -1,3 +1,11 @@
+# 0.3.0 — Arabic 123 legacy layout (2026-11-11)
+
+- Add the separately selectable Restore Arabic 123 legacy layout patch.
+- Expose the built-in legacy choice when Arabic 123 is available; preserve defaults and modern layouts.
+- Add emitted-DEX tests for Arabic packs, repeated reads, existing legacy selections and other languages.
+- Retain clipboard history and all three upstream patches.
+- Experimental: Android device validation pending.
+
 # 0.2.0 — Custom clipboard fork (2026-11-10)
 
 - Add Keep clipboard history forever for SwiftKey 9.13.19.3.
