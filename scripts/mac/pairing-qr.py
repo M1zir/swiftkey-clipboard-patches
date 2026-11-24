@@ -13,6 +13,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 SECRET = Path.home() / "Library/Application Support/SyncClipboard/phone-pairing.json"
@@ -48,11 +49,18 @@ def main():
         "pin": "sha256/" + pairing["pin"],
     }
     encoded = base64.urlsafe_b64encode(json.dumps(payload, separators=(",", ":")).encode()).decode().rstrip("=")
-    old_umask = os.umask(0o077)
+    # The code goes to qrencode on stdin, because other processes can read command arguments.
+    # mkstemp creates an owner-only file, which then replaces any older image in one step.
+    destination = Path(sys.argv[1]).expanduser().resolve()
+    descriptor, temporary = tempfile.mkstemp(suffix=".png", dir=destination.parent)
+    os.close(descriptor)
     try:
-        subprocess.run([qrencode, "-s", "10", "-m", "4", "-o", sys.argv[1], "skclip1:" + encoded], check=True)
+        subprocess.run([qrencode, "-s", "10", "-m", "4", "-o", temporary],
+                       input=("skclip1:" + encoded).encode(), check=True)
+        os.replace(temporary, destination)
     finally:
-        os.umask(old_umask)
+        if os.path.exists(temporary):
+            os.unlink(temporary)
     print("Pairing QR written for", ", ".join(hosts))
 
 
