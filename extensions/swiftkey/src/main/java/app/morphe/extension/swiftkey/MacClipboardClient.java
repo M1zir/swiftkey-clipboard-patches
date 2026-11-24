@@ -42,7 +42,7 @@ final class MacClipboardClient {
         }
     }
 
-    /** The Mac answered with an error status. Sending the same request again will not help. */
+    /** The Mac answered with a 4xx status. Sending the same request again will not help. */
     static final class RejectedException extends IOException {
         RejectedException(String message) {
             super(message);
@@ -160,8 +160,10 @@ final class MacClipboardClient {
         if (status < 200 || status > 299) {
             InputStream error = connection.getErrorStream();
             if (error != null) error.close();
-            throw new RejectedException(status == 401 ? "the Mac rejected the password, so pair again"
-                : "the Mac answered HTTP " + status);
+            if (status == 401) throw new RejectedException("the Mac rejected the password, so pair again");
+            if (status >= 400 && status < 500) throw new RejectedException("the Mac answered HTTP " + status);
+            // Other statuses, such as 503 while SyncClipboard starts, can pass on a later try.
+            throw new IOException("the Mac answered HTTP " + status);
         }
         try (InputStream in = connection.getInputStream()) {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
