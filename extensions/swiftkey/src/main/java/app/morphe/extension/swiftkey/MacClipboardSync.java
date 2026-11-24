@@ -1,9 +1,11 @@
 package app.morphe.extension.swiftkey;
 
 import android.content.ClipData;
+import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.PersistableBundle;
+import android.os.SystemClock;
 import android.os.UserManager;
 import android.util.Log;
 import java.io.IOException;
@@ -24,7 +26,7 @@ public final class MacClipboardSync {
     private static final String SENSITIVE = "android.content.extra.IS_SENSITIVE";
     private static final long POLL_MILLIS = 2000;
     private static final long RETRY_MILLIS = 10000;
-    private static final int MAX_RETRIES = 30;
+    private static final long UPLOAD_DEADLINE_MILLIS = 5 * 60 * 1000;
 
     private static final ScheduledExecutorService worker = Executors.newSingleThreadScheduledExecutor(task -> {
         Thread thread = new Thread(task, "mac-clipboard-sync");
@@ -42,7 +44,8 @@ public final class MacClipboardSync {
     private static boolean clientLoaded;
     private static String lastHash;
     private static String pendingText;
-    private static int retries;
+    private static long pendingSince;
+    private static boolean retryScheduled;
 
     private MacClipboardSync() {}
 
@@ -98,8 +101,8 @@ public final class MacClipboardSync {
     private static void onLocalCopy() {
         try {
             String text = copiedText();
-            // Never send a pairing code: it holds the Mac password.
-            if (text != null && !text.startsWith(MacClipboardPairing.CODE_PREFIX)) worker.execute(() -> upload(text));
+            // Never send a pairing code, even inside other text. It holds the Mac password.
+            if (text != null && !text.contains(MacClipboardPairing.CODE_PREFIX)) worker.execute(() -> upload(text));
         } catch (RuntimeException error) {
             Log.w(TAG, "Could not read the copied text", error);
         }
@@ -122,29 +125,37 @@ public final class MacClipboardSync {
         if (hash.equalsIgnoreCase(lastHash)) return;
         lastHash = hash;
         pendingText = text;
-        retries = 0;
+        pendingSince = SystemClock.elapsedRealtime();
         sendPending();
     }
 
-    /** Returns false while a copied clip is still waiting for the Mac. */
-    private static boolean sendPending() {
-        if (pendingText == null) return true;
+    /**
+     * Sends the newest unsent phone copy. One retry is scheduled at a time. The copy is dropped when
+     * the Mac rejects it or after five minutes.
+     */
+    private static void sendPending() {
+        if (pendingText == null) return;
         MacClipboardClient mac = client();
-        if (mac == null) {
+        if (mac == null || SystemClock.elapsedRealtime() - pendingSince > UPLOAD_DEADLINE_MILLIS) {
             pendingText = null;
-            return true;
+            return;
         }
         try {
             mac.send(pendingText);
             pendingText = null;
-            return true;
+        } catch (MacClipboardClient.RejectedException error) {
+            Log.w(TAG, "The Mac rejected a copy: " + error.getMessage());
+            pendingText = null;
         } catch (IOException error) {
-            if (retries++ < MAX_RETRIES) worker.schedule(MacClipboardSync::retry, RETRY_MILLIS, TimeUnit.MILLISECONDS);
-            return false;
+            if (!retryScheduled) {
+                retryScheduled = true;
+                worker.schedule(MacClipboardSync::retry, RETRY_MILLIS, TimeUnit.MILLISECONDS);
+            }
         }
     }
 
     private static void retry() {
+        retryScheduled = false;
         try {
             sendPending();
         } catch (RuntimeException error) {
@@ -154,13 +165,15 @@ public final class MacClipboardSync {
 
     private static void poll() {
         try {
-            // Send an unsent phone copy first, so an older Mac clip cannot replace it.
-            if (!sendPending()) return;
+            sendPending();
             MacClipboardClient mac = client();
             if (mac == null) return;
             MacClipboardClient.Clip clip = mac.fetch();
             if (clip == null || clip.hash.equalsIgnoreCase(lastHash)) return;
             if (clip.text.length() > MacClipboardClient.MAX_TEXT_LENGTH) return;
+            // Keep the phone's clip when it is newer, for example a password copied while this
+            // request ran, or after the Mac clip but before the keyboard opened.
+            if (clip.copiedAtMillis <= phoneClipMillis()) return;
             lastHash = clip.hash;
             clipboard.setPrimaryClip(ClipData.newPlainText("Mac", clip.text));
         } catch (IOException ignored) {
@@ -169,6 +182,12 @@ public final class MacClipboardSync {
             // An exception would cancel the repeating poll, so catch everything here.
             Log.w(TAG, "Could not fetch from the Mac", error);
         }
+    }
+
+    /** When the phone's current clip was copied, in wall-clock milliseconds, or 0 when it is empty. */
+    private static long phoneClipMillis() {
+        ClipDescription description = clipboard.getPrimaryClipDescription();
+        return description == null ? 0 : description.getTimestamp();
     }
 
     private static MacClipboardClient client() {
