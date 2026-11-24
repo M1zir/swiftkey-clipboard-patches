@@ -117,7 +117,10 @@ final class MacClipboardClient {
         return pairing.hosts.get(preferredHost);
     }
 
-    /** Tries each Mac address, starting with the one that answered last time. An error status ends the attempt. */
+    /**
+     * Tries each Mac address, starting with the one that answered last time. A 4xx status ends the
+     * attempt. A network error or another status moves on to the next address.
+     */
     private String request(String method, String body) throws IOException {
         IOException failure = null;
         int count = pairing.hosts.size();
