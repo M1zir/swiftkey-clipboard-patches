@@ -11,6 +11,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.Base64;
 import java.util.Locale;
 import javax.net.ssl.HttpsURLConnection;
@@ -30,10 +32,20 @@ final class MacClipboardClient {
     static final class Clip {
         final String hash;
         final String text;
+        /** When the Mac server stored the clip, or 0 when it did not say. */
+        final long copiedAtMillis;
 
-        Clip(String hash, String text) {
+        Clip(String hash, String text, long copiedAtMillis) {
             this.hash = hash;
             this.text = text;
+            this.copiedAtMillis = copiedAtMillis;
+        }
+    }
+
+    /** The Mac answered with an error status. Sending the same request again will not help. */
+    static final class RejectedException extends IOException {
+        RejectedException(String message) {
+            super(message);
         }
     }
 
@@ -85,9 +97,18 @@ final class MacClipboardClient {
             String text = profile.optString("text");
             String hash = profile.optString("hash");
             if (text.isEmpty() || hash.isEmpty()) return null;
-            return new Clip(hash, text);
+            return new Clip(hash, text, copiedAt(profile.optString("syncedAt")));
         } catch (JSONException error) {
             throw new IOException("Unexpected answer from the Mac", error);
+        }
+    }
+
+    /** SyncClipboard stamps each saved clip with an ISO 8601 time that includes the Mac's offset. */
+    private static long copiedAt(String syncedAt) {
+        try {
+            return OffsetDateTime.parse(syncedAt).toInstant().toEpochMilli();
+        } catch (DateTimeParseException error) {
+            return 0;
         }
     }
 
@@ -96,7 +117,7 @@ final class MacClipboardClient {
         return pairing.hosts.get(preferredHost);
     }
 
-    /** Tries each Mac address, starting with the one that answered last time. */
+    /** Tries each Mac address, starting with the one that answered last time. An error status ends the attempt. */
     private String request(String method, String body) throws IOException {
         IOException failure = null;
         int count = pairing.hosts.size();
@@ -106,6 +127,9 @@ final class MacClipboardClient {
                 String answer = request(pairing.hosts.get(index), method, body);
                 preferredHost = index;
                 return answer;
+            } catch (RejectedException error) {
+                preferredHost = index;
+                throw error;
             } catch (IOException error) {
                 failure = error;
             }
@@ -136,7 +160,7 @@ final class MacClipboardClient {
         if (status < 200 || status > 299) {
             InputStream error = connection.getErrorStream();
             if (error != null) error.close();
-            throw new IOException(status == 401 ? "the Mac rejected the password, so pair again"
+            throw new RejectedException(status == 401 ? "the Mac rejected the password, so pair again"
                 : "the Mac answered HTTP " + status);
         }
         try (InputStream in = connection.getInputStream()) {
