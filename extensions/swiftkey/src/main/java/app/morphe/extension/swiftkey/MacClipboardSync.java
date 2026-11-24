@@ -168,12 +168,15 @@ public final class MacClipboardSync {
             sendPending();
             MacClipboardClient mac = client();
             if (mac == null) return;
+            long phoneClipBefore = phoneClipMillis();
             MacClipboardClient.Clip clip = mac.fetch();
             if (clip == null || clip.hash.equalsIgnoreCase(lastHash)) return;
             if (clip.text.length() > MacClipboardClient.MAX_TEXT_LENGTH) return;
-            // Keep the phone's clip when it is newer, for example a password copied while this
-            // request ran, or after the Mac clip but before the keyboard opened.
-            if (clip.copiedAtMillis <= phoneClipMillis()) return;
+            // A phone copy made while the request ran always wins, whatever the two clocks say.
+            long phoneClip = phoneClipMillis();
+            if (phoneClip != phoneClipBefore) return;
+            // Also keep a phone clip copied after the Mac clip but before the keyboard opened.
+            if (clip.copiedAtMillis <= phoneClip) return;
             lastHash = clip.hash;
             clipboard.setPrimaryClip(ClipData.newPlainText("Mac", clip.text));
         } catch (IOException ignored) {
